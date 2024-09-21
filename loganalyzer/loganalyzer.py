@@ -1,3 +1,4 @@
+import colorsys
 import csv
 import sys
 import numpy as np
@@ -27,6 +28,7 @@ class Decoder(QDialog):
     def decoderUI(self):
         self.setWindowTitle("Log Decoder")
         self.resize(900, 600)
+        self.setStyleSheet("background-color: #2E2E2E; color:white;")
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
         layout = QVBoxLayout()
@@ -80,8 +82,8 @@ class Decoder(QDialog):
         threshold_value = self.entry_threshold.text()
         output_file_name = self.entry_output_file.text()
 
-        command = [" ./Parser.exe", input_file_path, threshold_value, output_file_name + ".csv"]
-        print(command)
+        command = ["Parser.exe", input_file_path, str(threshold_value), output_file_name + ".csv"]
+        print(f"Executing command: {command}")
         try:
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True)
             while True:
@@ -169,6 +171,7 @@ class LogAnalyzerApp(QMainWindow):
     def initUI(self):
         self.setWindowTitle('Log Analyzer')
         self.resize(900, 600)
+        self.setStyleSheet("background-color: #2E2E2E; color:white;")
         # Set main widget for plots in area
         self.setCentralWidget(self.area)
 
@@ -220,8 +223,8 @@ class LogAnalyzerApp(QMainWindow):
 
     def select_csv_file(self):
         options = QFileDialog.Options()
-        # Set the dialog to accept only CSV files
-        self.file_name, _ = QFileDialog.getOpenFileName(self, "Select CSV File", "", "CSV Files (*.csv)", options=options)
+        self.file_name, _ = QFileDialog.getOpenFileName(self, "Select CSV File", "", "CSV Files (*.csv);;TXT Files (*.txt)", options=options)
+
         if self.file_name:
             self.initialization()
 
@@ -361,7 +364,9 @@ class LogAnalyzerApp(QMainWindow):
                     y = self.lists_dict[a]
                     x = (self.lists_dict['vtime'])[0:len(y)]
                     self.plotDict[a].setXLink(self.plotDict["vtime"])
-                    pen = pg.mkPen(color=tuple(np.random.randint(0, 256, 3)))
+                    col = colorsys.hsv_to_rgb(random.uniform(0, 1), random.uniform(0.5, 1), random.uniform(0.7, 1))
+                    col = tuple(int(255 * c) for c in col)
+                    pen = pg.mkPen(color=tuple(col))
                     self.plotDict[a].plot(x, y, pen=pen)
                     self.plotDict[a].showGrid(x=True, y=True)
                     self.w2.nextRow()
@@ -409,7 +414,9 @@ class LogAnalyzerApp(QMainWindow):
 
                     y = self.lists_dict[a]
                     x = (self.lists_dict['vtime'])[0:len(y)]
-                    pen = pg.mkPen(color=tuple(np.random.randint(0, 256, 3)))
+                    col = colorsys.hsv_to_rgb(random.uniform(0, 1), random.uniform(0.5, 1), random.uniform(0.7, 1))
+                    col = tuple(int(255 * c) for c in col)
+                    pen = pg.mkPen(color=tuple(col))
                     if a in self.plotDict:
                         # Update existing line
                         self.plotDict[a].setData(x, y, pen=pen)
@@ -573,10 +580,8 @@ class LogAnalyzerApp(QMainWindow):
                 self.label_text2.setHtml(formatted_text)
 
                 # Update vertical line position for each plot
-                if plot_name in self.vLines and hasattr(self.vLines[plot_name], 'setPos'):
-                    self.vLines[plot_name].setPos(mousePoint.x())
-                else:
-                    print(f"Error: vLine for {plot_name} is not valid")
+                for i in self.vLines:
+                    self.vLines[i].setPos(mousePoint.x())
 
     def disconnect_all_cursors(self):
         for plot_name, connection in list(self.mouseMovedConnections.items()):
@@ -629,6 +634,7 @@ class LogAnalyzerApp(QMainWindow):
             self.select_csv_file()
 
     def new_csv(self):
+        self.close_file()
         self.mode = 0
         self.select_csv_file()
 
