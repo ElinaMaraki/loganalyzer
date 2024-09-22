@@ -226,6 +226,7 @@ class LogAnalyzerApp(QMainWindow):
         self.file_name, _ = QFileDialog.getOpenFileName(self, "Select CSV File", "", "CSV Files (*.csv);;TXT Files (*.txt)", options=options)
 
         if self.file_name:
+            self.setWindowTitle(f'Log Analyzer {self.file_name}')
             self.initialization()
 
     def initialization(self):
@@ -671,6 +672,7 @@ class LogAnalyzerApp(QMainWindow):
             self.select_csv_file()
 
     def close_file(self):
+        self.setWindowTitle('Log Analyzer')
         self.lists_dict.clear()
         self.w2.clear()
         self.clear_all()
